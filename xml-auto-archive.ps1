@@ -1,5 +1,6 @@
+# Kroger Company Proprietary Property
 # Written by Chris Giddings
-# Updated May 27th 2014
+# Updated August 6th 2014
 #
 # This script takes All XML files in specific directories from the past 24 hours,
 # creates a zip file to hold them and inserts the files one by one into the zip,
@@ -17,6 +18,12 @@ $global:FamilyTree = "$DataPath\FamilyTree";
 $global:GDSN = "$DataPath\GDSN";
 $global:GDSN_CINXML = "$GDSN\CINXML";
 $global:BackInTime = "-90";
+#
+# ARCHIVE PATH
+$global:ArchivePath = "$DataMigrationPath\Archive";
+$global:FamilyTreeArchive = "$ArchivePath\FamilyTree";
+$global:GDSN_Archive = "$ArchivePath\GDSN";
+$global:GDSN_CINXML_Archive = "$GDSN_Archive\CINXML";
 #
 # DROP ZONE PATH VARIABLES
 $CINXML_DROP = "$GDSN_CINXML";
@@ -43,11 +50,18 @@ Function CheckDirectoryStructure($StructureItem)
 ###############################################################################
 Function CheckBaseStructure
 {
+    # DROP STRUCTURE
     CheckDirectoryStructure "$DataMigrationPath";
     CheckDirectoryStructure "$DataPath";
     CheckDirectoryStructure "$FamilyTree";
     CheckDirectoryStructure "$GDSN";
     CheckDirectoryStructure "$GDSN_CINXML";
+    # ARCHIVE STRUCTURE
+    CheckDirectoryStructure "$ArchivePath";
+    CheckDirectoryStructure "$FamilyTreeArchive";
+    CheckDirectoryStructure "$GDSN_Archive";
+    CheckDirectoryStructure "$GDSN_CINXML_Archive";
+
 }
 ###############################################################################
 #   CHECK FOR DATED DIRECTORIES IN STRUCTURE
@@ -57,10 +71,10 @@ $ThisYear = Get-Date -format yyy;
 $ThisMonth = Get-Date -format MM;
 #Write-Output "$TodaysDate";
 
-$YearInFamilyTree ="$FamilyTree\$ThisYear";
+$YearInFamilyTree ="$FamilyTreeArchive\$ThisYear";
 $MonthInFamilyTree = "$YearInFamilyTree\$ThisMonth";
 
-$YearInCINXML = "$GDSN_CINXML\$ThisYear";
+$YearInCINXML = "$GDSN_CINXML_Archive\$ThisYear";
 $MonthInCINXML = "$YearInCINXML\$ThisMonth";
 
 Function CheckOrCreateDatedItem($DatedItem)
@@ -136,36 +150,36 @@ Function ProcessAndArchiveFiles
 ###############################################################################
 #   CINXML Convention       CINyyyyMMddHHmmssSSS.xml
 ###############################################################################
-        # foreach($file in Get-ChildItem "$CINXML_DROP\*.xml")
-        # {
-        #     $zipName = "$MonthInCINXML\CIN_$DateToMatch.zip";
+        foreach($file in Get-ChildItem "$CINXML_DROP\*.xml")
+        {
+            $zipName = "$MonthInCINXML\CIN_$DateToMatch.zip";
 
-        #     if ( $file.name -like "*$DateToMatch*.xml" )
-        #     {
-        #         Write-Output "";
-        #         Write-Output "Matching file found: $file";
+            if ( $file.name -like "*$DateToMatch*.xml" )
+            {
+                Write-Output "";
+                Write-Output "Matching file found: $file";
 
-        #         if ( Test-Path -Path "$zipName" )
-        #         {
-        #             Write-Output "CINXML archive, $zipName already exists. Matching files will be inserted.";
+                if ( Test-Path -Path "$zipName" )
+                {
+                    Write-Output "CINXML archive, $zipName already exists. Matching files will be inserted.";
 
-        #             Write-Output "Archiving $file into $zipName";
-        #             InsertDatedFileIntoDatedZip "$file" "$zipName";
+                    Write-Output "Archiving $file into $zipName";
+                    InsertDatedFileIntoDatedZip "$file" "$zipName";
 
-        #             DeleteFileOrFolder "$file";
-        #         }
-        #         else
-        #         {
-        #             Write-Output "Creating new CINXML archive: $zipName"
-        #             CreateNewDatedZip $zipName;
+                    DeleteFileOrFolder "$file";
+                }
+                else
+                {
+                    Write-Output "Creating new CINXML archive: $zipName"
+                    CreateNewDatedZip $zipName;
 
-        #             Write-Output "Archiving $file into $zipName";
-        #             InsertDatedFileIntoDatedZip "$file" "$zipName";
+                    Write-Output "Archiving $file into $zipName";
+                    InsertDatedFileIntoDatedZip "$file" "$zipName";
 
-        #             # DeleteFileOrFolder "$file";
-        #         }
-        #     }
-        # }
+                    DeleteFileOrFolder "$file";
+                }
+            }
+        }
 ###############################################################################
 #   DETECT & PROCESS FAMILYTREE FILES
 ###############################################################################
@@ -187,7 +201,7 @@ Function ProcessAndArchiveFiles
                     Write-Output "Archiving $file into $zipName";
                     InsertDatedFileIntoDatedZip "$file" "$zipName";
 
-                    # DeleteFileOrFolder "$file";
+                    DeleteFileOrFolder "$file";
                 }
                 else
                 {
@@ -197,7 +211,7 @@ Function ProcessAndArchiveFiles
                     Write-Output "Archiving $file into $zipName";
                     InsertDatedFileIntoDatedZip "$file" "$zipName";
 
-                    # DeleteFileOrFolder "$file";
+                    DeleteFileOrFolder "$file";
                 }
             }
         }
